@@ -1,0 +1,30 @@
+<?xml version="1.0" ?>
+
+<shipment> 
+<shipment_id>100</shipment_id>
+<shipment_description> COD</shipment_description>
+<shipment_delivery_address>chikkamagaluru</shipment_delivery_address>
+<Shipment_weight>100</Shipment_weight>
+    <Shipment_status>Order Received</Shipment_status>
+    <Shipment_create_dateTime></Shipment_create_dateTime>
+    <Shipment_modified_dateTime></Shipment_modified_dateTime>
+    <Shipment_Order_Details>
+    <Order>
+        <Order_Id>1</Order_Id>
+		 <Order_description>Washing Machine</Order_description>
+        <Order_delivery_Address>Bangalore</Order_delivery_Address>
+        <Order_delivery_DateTime>2022-06-14</Order_delivery_DateTime>
+        <Order_status>Order Picked</Order_status>
+        <Order_count>1</Order_count>
+        <Order_amount>22000</Order_amount>
+        <Order_details> 
+            <Item_id>1</Item_id>
+            <Item_description>Home Appliance</Item_description>
+            <Item_type>Electric</Item_type>
+			<Item_Price>22000</Item_Price>
+			<Item_status>Availaible</Item_status>
+            <Item_weight>100</Item_weight>
+        </Order_details>
+    </Order>
+    </Shipment_Order_Details>
+</shipment>
