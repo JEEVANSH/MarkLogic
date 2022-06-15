@@ -1,0 +1,127 @@
+xquery version "1.0-ml";
+
+(: load documents :)
+xdmp:eval('for $d in xdmp:filesystem-directory("C:\shipment")//dir:entry
+return xdmp:document-load($d//dir:pathname, 
+  <options xmlns="xdmp:document-load">
+    <uri>{fn:string($d//dir:filename)}</uri>
+    <collections>
+          <collection>Shipment</collection>
+     </collections> 
+  </options>)',  ()
+		  )
+      
+xdmp:document-delete("data1.xml")
+      
+(:Write FLWOR query to get all the order details form Shipment Collection. :)
+for $Shipment in collection()/shipment
+let $OrderDetails := $Shipment//Order_details
+return $OrderDetails
+
+(:Write FLWOR query to get all the order details from shipment where order amount is more than 10000. :)
+for $Shipment in collection()/shipment
+let $OrderAmount := xs:integer($Shipment//Order_amount/text())
+where  $OrderAmount > 10000
+return $Shipment//Order_details
+
+(:Write FLWOR query to get all the order id and item id and item description where item weight is less than 1 Kg. :)
+for $Shipment in collection()/shipment
+let $OrderId := $Shipment//Order_Id
+let $ItemId := $Shipment//Item_id
+let $ItemDescription := $Shipment//Item_description
+let $ItemWeight:= $Shipment//Item_weight/text()
+where $ItemWeight lt 1
+return 
+(<Item>{$ItemId}{$OrderId}{$ItemDescription}</Item>)
+
+(:Write FLWOR query to get all the item details sorted by item price. :)
+for $shipment in /shipment
+let $Order := $shipment//Order
+let $ItemPrice :=xs:integer( $shipment//Item_Price/text())
+order by $ItemPrice ascending
+return $ItemPrice
+
+(:Write FLWOR query to get all the order details which are delivered within last 2 days. :)
+for $shipment in /shipment
+let $Orders := $shipment//Order_details
+let $deliverDate := $shipment//Order_delivery_DateTime/text()
+let $diff := (fn:days-from-duration((fn:current-date() - xs:date($deliverDate))))
+where xs:integer($diff le 2) 
+return $Orders
+
+(:Write FLWOR query to get shipment id, order Id and status for all the documents. :)
+for $shipment in /shipment
+let $shipmentId := $shipment//shipment_id
+let $OrderId := $shipment//Order_Id
+let $ItemStatus:=$shipment//Item_status
+return
+(<document>{$shipmentId}{$OrderId}{$ItemStatus}</document>)
+
+(:Write FLWOR query to get shipment Id and count of all the order available in that shipment. :)
+for $shipment in /shipment
+let $shipmentId := $shipment//shipment_id
+let $order := fn:count($shipment//Order)
+return (<shipment>{$shipmentId} number of orders := {$order}</shipment>)
+
+(:Write FLWOR query to get shipment Id and count of all the order available in that shipment which are delivered. :)
+for $shipment in /shipment
+let $shipmentId := $shipment//shipment_id
+let $order := fn:count($shipment//Order)
+let $orderStatus := $shipment//Order_status/text()
+where $orderStatus eq "Order Delivered "
+return 
+(<shipment>{$shipmentId} number of orders := {$order} </shipment>)
+
+(:Write FLWOR query to get shipment id, and count of order which have same Order Delivery Address. :)
+ 
+ for $d in fn:distinct-values(collection()/shipment//Order_delivery_Address)
+ let $delAddr:= count(collection()/shipment/Shipment_Order_Details/Order[./Order_delivery_Address eq $d])
+ where count(collection()/shipment/Shipment_Order_Details/Order[./Order_delivery_Address eq $d]) >1
+ return ( <ShipmentId>{/shipment/shipment_id}</ShipmentId>,"Order having same Address is :", $delAddr)
+ xquery version "1.0-ml";
+(:Write a Function which return Interval For given input start datetime, end datetime and interval duration. :)
+declare function local:interval($start as xs:dateTime, $end as xs:dateTime, $interval as xs:string)
+{ 
+  element IntervalDetails{
+  
+   if($start + xs:dayTimeDuration($interval) eq $end)
+    then  
+     (
+       element interval{element startdatetime{$start},
+                element enddatetime{$end}}
+       ) 
+      else
+       (
+         let $st := $start
+         let $st1 := ($start + xs:dayTimeDuration($interval))
+          return(
+         (  element interval{element startdatetime{$st},
+                element enddatetime{$st1}}
+         ),local:interval($st1,$end,$interval))
+         
+       )
+    
+   }  
+
+};
+  
+let $start := xs:dateTime ("2022-06-15T06:00:00")
+let $endtime := xs:dateTime ("2022-06-15T09:00:00")
+let $interval := "PT1H"
+
+return local:interval($start, $endtime, $interval)
+
+
+
+
+(:Write a Function to convert input datetime into UTC datetime. :)
+
+ declare function local:convert($input)
+{  
+  let $current := xs:dateTime($input)
+  return fn:adjust-dateTime-to-timezone( $current, xs:dayTimeDuration("PT0H")) 
+};
+
+<Utc-dateTime>
+{local:convert("2022-06-15T15:42:26.44+05:30")} 
+</Utc-dateTime>
